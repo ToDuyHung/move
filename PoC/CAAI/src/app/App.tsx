@@ -18,6 +18,15 @@ import {
   createEmptyWorkbook,
 } from './utils/xlsxUtils';
 
+// @ts-ignore
+import provisioningAsset from '../assets/Provisioning.xlsx?url';
+// @ts-ignore
+import provisioning2Asset from '../assets/Provisioning (2).xlsx?url';
+// @ts-ignore
+import inhouseAsset from '../assets/In-house Pool Recommendation.xlsx?url';
+// @ts-ignore
+import poolBuyAsset from '../assets/Pool Buy Senarios.xlsx?url';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('provisioning');
   
@@ -54,6 +63,12 @@ export default function App() {
 
   const [selectedCommand, setSelectedCommand] = useState<Command>('VLOOKUP');
   const [exportWorkbookData, setExportWorkbookData] = useState<WorkbookData | null>(null);
+  
+  const [isResolvedMap, setIsResolvedMap] = useState<Record<string, boolean>>({
+    provisioning: false,
+    inHousePool: false,
+    poolBuyScenarios: false,
+  });
 
   // Auto-switch command when tab changes
   useEffect(() => {
@@ -88,7 +103,36 @@ export default function App() {
   };
 
   const handleExport = () => {
-    exportToXLSX(exportWorkbookData || workbookDataMap[activeTab], 'spreadsheet-export.xlsx');
+    let downloadUrl = '';
+    let fileName = 'export.xlsx';
+
+    if (activeTab === 'provisioning') {
+      if (isResolvedMap.provisioning) {
+        downloadUrl = provisioning2Asset;
+        fileName = 'Provisioning (2).xlsx';
+      } else {
+        downloadUrl = provisioningAsset;
+        fileName = 'Provisioning.xlsx';
+      }
+    } else if (activeTab === 'inHousePool') {
+      downloadUrl = inhouseAsset;
+      fileName = 'In-house Pool Recommendation.xlsx';
+    } else if (activeTab === 'poolBuyScenarios') {
+      downloadUrl = poolBuyAsset;
+      fileName = 'Pool Buy Senarios.xlsx';
+    }
+
+    if (downloadUrl) {
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // Fallback
+      exportToXLSX(exportWorkbookData || workbookDataMap[activeTab], 'spreadsheet-export.xlsx');
+    }
   };
 
   const executeTask = async (command: Command, prompt: string, autoFix?: { cell: string; value: number }) => {
@@ -121,6 +165,7 @@ export default function App() {
     
     if (autoFix) {
       formData.append('autoFix', JSON.stringify(autoFix));
+      setIsResolvedMap(prev => ({ ...prev, [activeTab]: true }));
     }
 
     try {
@@ -263,6 +308,7 @@ export default function App() {
   };
 
   const handleSubmitPrompt = (prompt: string) => {
+    setIsResolvedMap(prev => ({ ...prev, [activeTab]: false }));
     executeTask(selectedCommand, prompt);
   };
 

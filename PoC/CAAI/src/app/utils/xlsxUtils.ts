@@ -39,22 +39,30 @@ export function exportToXLSX(workbookData: WorkbookData, filename: string = 'exp
   const wb = XLSX.utils.book_new();
 
   workbookData.sheets.forEach((sheet) => {
-    // 1. Create a worksheet with values only first
-    const wsData = sheet.data.map((row) => row.map((cell) => cell.value));
+    // 1. Prepare data with both values and formulas
+    const wsData = sheet.data.map((row) => 
+      row.map((cell) => {
+        if (cell.formula) {
+          // Return a cell object for formulas
+          return { v: cell.value, f: cell.formula, t: 'n' };
+        }
+        return cell.value;
+      })
+    );
     const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-    // 2. Overlay formulas and modern array flags
+    // 2. Add special flags for O365 Dynamic Arrays
     sheet.data.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell.formula) {
           const cellAddress = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
-          if (!ws[cellAddress]) ws[cellAddress] = { v: cell.value };
+          if (!ws[cellAddress]) ws[cellAddress] = { v: cell.value, t: 'n' };
           
+          // Use the raw formula from backend without any prefixing
           ws[cellAddress].f = cell.formula;
+          ws[cellAddress].t = 'n';
           
-          // Special handling for O365 Dynamic Arrays (LET, SEQUENCE, etc.)
-          // We mark the cell as an array formula (F) covering just itself.
-          // This tells Excel O365 to treat it as a Dynamic Array and avoid adding '@'
+          // Marking as an array formula prevents O365 from adding '@'
           if (cell.formula.includes('LET(') || cell.formula.includes('SEQUENCE(')) {
             ws[cellAddress].F = `${cellAddress}:${cellAddress}`;
           }
@@ -117,8 +125,8 @@ export function simulateBackendProcessing(
   uploadedFiles: UploadedFiles
 ): BackendResponse {
   if (command === 'VLOOKUP') {
-    // Expected behavior: read TEST.xlsx from partNumber slot
-    const partNumberFile = uploadedFiles.partNumber;
+    // Expected behavior: read TEST.xlsx from partNumbers slot
+    const partNumberFile = uploadedFiles.partNumbers;
     
     let sourceData: any[][] = [];
     if (partNumberFile && partNumberFile.data && partNumberFile.data.length > 0) {
