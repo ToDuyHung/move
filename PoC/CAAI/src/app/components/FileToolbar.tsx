@@ -34,7 +34,7 @@ export default function FileToolbar({ uploadedFiles, activeTab, onFileSelect, on
 
   return (
     <div className="flex items-center justify-between p-4 bg-gray-50 border-b gap-4">
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-nowrap">
+      <div className="flex items-center gap-2 flex-1 flex-nowrap">
         <span className="font-semibold text-gray-700 whitespace-nowrap mr-2">Files:</span>
         {fileSlots.map((slot) => (
           <FileUploadChip

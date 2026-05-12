@@ -1,7 +1,17 @@
 from fastapi import FastAPI, UploadFile, Form, File
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+import argparse
 from typing import Optional
+
+# Parse command line arguments
+parser = argparse.ArgumentParser(description="Aerospace Provisioning Engine Backend")
+parser.add_argument("-mode", type=int, default=1, help="1 for Google Sheets (;), 2 for Microsoft O365 (,)")
+args, unknown = parser.parse_known_args()
+
+# Set global formula separator
+FORMULA_SEPARATOR = ";" if args.mode == 1 else ","
+print(f"--- RUNNING IN {'GOOGLE SHEETS' if args.mode == 1 else 'MICROSOFT O365'} MODE (Separator: '{FORMULA_SEPARATOR}') ---")
 
 from models.task_models import TaskResponse
 from services.workbook_parser import parse_excel_file
@@ -58,7 +68,13 @@ async def execute_task(
 
         if command in ['VLOOKUP', 'Provisioning', 'ACRD-based Recommendation', 'AI-based Recommendation', 'Pool Buy Scenarios']:
             # Use the multi-file vlookup logic
-            preview_wb, export_wb, impact_summary = generate_vlookup_workbooks(files_data, prompt, auto_fix=auto_fix_obj, command=command)
+            preview_wb, export_wb, impact_summary = generate_vlookup_workbooks(
+                files_data, 
+                prompt, 
+                auto_fix=auto_fix_obj, 
+                command=command,
+                separator=FORMULA_SEPARATOR
+            )
         else:
             preview_wb, export_wb = generate_fallback_workbooks(command, prompt)
             impact_summary = None

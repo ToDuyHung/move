@@ -15,10 +15,13 @@
         },
         {
           "header": "Annual FH",
-          "type": "source",
-          "column": "Annual FH",
+          "type": "vlookup",
+          "lookup_file": "partNumbers",
+          "lookup_key_col_idx": 0,
+          "target_col_idx": 1,
+          "step_label": "Lookup Annual FH",
           "agent": "Data Mapping Agent",
-          "tool": "Context_Reader",
+          "tool": "CrossRef_Engine",
           "phase": "Planning"
         },
         {
@@ -67,26 +70,35 @@
         },
         {
           "header": "RRI",
-          "type": "source",
-          "column": "RRI",
+          "type": "vlookup",
+          "lookup_file": "partNumbers",
+          "lookup_key_col_idx": 0,
+          "target_col_idx": 2,
+          "step_label": "Lookup RRI",
           "agent": "Data Mapping Agent",
-          "tool": "Context_Reader",
+          "tool": "CrossRef_Engine",
           "phase": "Planning"
         },
         {
           "header": "Buy Price (USD)",
-          "type": "source",
-          "column": "Buy Price (USD)",
+          "type": "vlookup",
+          "lookup_file": "partNumbers",
+          "lookup_key_col_idx": 0,
+          "target_col_idx": 3,
+          "step_label": "Lookup Buy Price",
           "agent": "Data Mapping Agent",
-          "tool": "Context_Reader",
+          "tool": "CrossRef_Engine",
           "phase": "Planning"
         },
         {
           "header": "Aircraft Count",
-          "type": "source",
-          "column": "Aircraft Count",
+          "type": "vlookup",
+          "lookup_file": "partNumbers",
+          "lookup_key_col_idx": 0,
+          "target_col_idx": 4,
+          "step_label": "Lookup Aircraft Count",
           "agent": "Data Mapping Agent",
-          "tool": "Context_Reader",
+          "tool": "CrossRef_Engine",
           "phase": "Planning"
         },
         {

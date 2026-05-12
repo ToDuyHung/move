@@ -32,7 +32,7 @@ export default function FileUploadChip({
         className="hidden"
       />
       <div className={`
-        flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all
+        flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all flex-1 justify-center
         ${uploaded
           ? 'border-green-500 bg-green-50 text-green-900'
           : 'border-gray-300 bg-white text-gray-500 hover:border-blue-400'

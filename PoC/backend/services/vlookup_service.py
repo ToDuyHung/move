@@ -22,11 +22,6 @@ class TaskAnalyzer:
         self.report["diagnostics"].append({"severity": severity, "message": message, "code": code})
 
     def analyze(self):
-        source_file_key = self.scenario.get("source_file")
-        source_data = self.files_data.get(source_file_key)
-        if not source_data:
-            self._add_diagnostic("CRITICAL", f"File '{source_file_key}' missing.", "file_missing")
-            return self.report
         detailed_plan = []
         for col in self.scenario.get("target_columns", []):
             label = col.get("step_label") or f"Processing {col.get('header')}"
@@ -40,6 +35,13 @@ class TaskAnalyzer:
                 "status": "pending"
             })
         self.report["plan"] = detailed_plan
+
+        source_file_key = self.scenario.get("source_file")
+        source_data = self.files_data.get(source_file_key)
+        if not source_data:
+            self._add_diagnostic("CRITICAL", f"File '{source_file_key}' missing.", "file_missing")
+            return self.report
+            
         return self.report
 
 def match_scenario(scenarios, prompt):
@@ -49,7 +51,7 @@ def match_scenario(scenarios, prompt):
             return s
     return scenarios.get("VLOOKUP")
 
-def generate_vlookup_workbooks(files_data: Dict[str, List[List[Any]]], prompt: str, auto_fix: Optional[Dict] = None, command: str = None):
+def generate_vlookup_workbooks(files_data: Dict[str, List[List[Any]]], prompt: str, auto_fix: Optional[Dict] = None, command: str = None, separator: str = ";"):
     # Apply auto_fix (Resolve feature)
     param_key = next((k for k in files_data.keys() if k.lower() == 'parameters'), None)
     if auto_fix and param_key:
@@ -201,24 +203,24 @@ def generate_vlookup_workbooks(files_data: Dict[str, List[List[Any]]], prompt: s
                         v_char = get_column_letter(end_idx + 1)
                         # VLOOKUP index is relative to range start
                         lookup_idx = v_idx - k_idx + 1
-                        excel_formula = f"VLOOKUP({k_cell}; '{f_name}'!${k_char}$1:${v_char}$8000; {lookup_idx}; FALSE)"
+                        excel_formula = f"VLOOKUP({k_cell}{separator} '{f_name}'!${k_char}$1:${v_char}$8000{separator} {lookup_idx}{separator} FALSE)"
                     else:
                         v_idx = col.get("target_col_idx", 1)
                         v_idx_rel = v_idx - l_k_idx + 1
-                        f_suffix = suffix.replace(",", ";") if suffix else ""
-                        excel_formula = f"VLOOKUP({k_cell}; '{f_name}'!${l_start_char}$1:$Z$5000; {v_idx_rel}; FALSE){f_suffix}"
+                        f_suffix = suffix.replace(",", separator).replace(";", separator) if suffix else ""
+                        excel_formula = f"VLOOKUP({k_cell}{separator} '{f_name}'!${l_start_char}$1:$Z$5000{separator} {v_idx_rel}{separator} FALSE){f_suffix}"
                     
                     # Wrap in IFERROR if fallback is 0 or numeric
                     f_val = col.get("fallback_value")
                     if f_val == 0 or f_val == "0" or (isinstance(f_val, (int, float)) and f_val == 0):
-                        excel_formula = f"IFERROR({excel_formula}; 0)"
+                        excel_formula = f"IFERROR({excel_formula}{separator} 0)"
                     
                     # Wrap ESS in INT()
                     if col.get("header") == "ESS":
                         excel_formula = f"INT({excel_formula})"
                     
                     if excel_formula:
-                        excel_formula = excel_formula.replace(",", ";")
+                        excel_formula = excel_formula.replace(",", separator).replace(";", separator)
                 elif ctype == "expression":
                     try:
                         eval_expr = col["formula_template"]
@@ -346,11 +348,14 @@ def generate_vlookup_workbooks(files_data: Dict[str, List[List[Any]]], prompt: s
                     if excel_formula:
                         # Replace {i} with current row number (e.g. L{i} -> L2)
                         excel_formula = excel_formula.replace("{i}", str(i+1))
+                        excel_formula = excel_formula.replace(",", separator).replace(";", separator)
                         for char in re.findall(r'\{([A-Z])\}', excel_formula):
                             excel_formula = excel_formula.replace(f'{{{char}}}', f"{char}{i+1}")
-                        excel_formula = excel_formula.replace(",", ";").replace("'", '"')
+                        excel_formula = excel_formula.replace(",", separator).replace(";", separator).replace("'", '"')
 
                 e_row.append(CellData(value=val, formula=excel_formula))
+                if i == 1 and excel_formula:
+                    print(f"DEBUG SAMPLE FORMULA (Col {col.get('header')}): {excel_formula}")
             
             res_preview.append(p_row); res_export.append(e_row)
             
