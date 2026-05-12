@@ -39,13 +39,29 @@ export function exportToXLSX(workbookData: WorkbookData, filename: string = 'exp
   const wb = XLSX.utils.book_new();
 
   workbookData.sheets.forEach((sheet) => {
-    const wsData = sheet.data.map((row) => row.map((cell) => {
-      if (cell.formula) {
-        return { v: cell.value, f: cell.formula };
-      }
-      return cell.value;
-    }));
+    // 1. Create a worksheet with values only first
+    const wsData = sheet.data.map((row) => row.map((cell) => cell.value));
     const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // 2. Overlay formulas and modern array flags
+    sheet.data.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell.formula) {
+          const cellAddress = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
+          if (!ws[cellAddress]) ws[cellAddress] = { v: cell.value };
+          
+          ws[cellAddress].f = cell.formula;
+          
+          // Special handling for O365 Dynamic Arrays (LET, SEQUENCE, etc.)
+          // We mark the cell as an array formula (F) covering just itself.
+          // This tells Excel O365 to treat it as a Dynamic Array and avoid adding '@'
+          if (cell.formula.includes('LET(') || cell.formula.includes('SEQUENCE(')) {
+            ws[cellAddress].F = `${cellAddress}:${cellAddress}`;
+          }
+        }
+      });
+    });
+
     XLSX.utils.book_append_sheet(wb, ws, sheet.name);
   });
 
