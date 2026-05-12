@@ -82,7 +82,6 @@ def generate_vlookup_workbooks(files_data: Dict[str, List[List[Any]]], prompt: s
     source_headers = [str(h).strip().upper() for h in source_rows[0]]
 
     # 1. Pre-build lookup dictionaries
-    lookup_info = []
     for col in scenario["target_columns"]:
         if col.get("type") == "vlookup":
             l_file = normalize_key(col.get("lookup_file", ""))
@@ -166,7 +165,8 @@ def generate_vlookup_workbooks(files_data: Dict[str, List[List[Any]]], prompt: s
             p_row, e_row = [], []
             
             for col_idx, col in enumerate(scenario["target_columns"]):
-                ctype, info = col["type"], lookup_info[col_idx]
+                ctype = col["type"]
+                info = {"dict": col.get("dict", {})}
                 val, excel_formula = "", None
                 if ctype == "source":
                     idx = get_column_index(source_headers, col.get("column", "").upper())
@@ -284,6 +284,17 @@ def generate_vlookup_workbooks(files_data: Dict[str, List[List[Any]]], prompt: s
                             "FALSE": False
                         }
                         val = eval(eval_expr, eval_context)
+                        
+                        # Ensure excel_formula is assigned and fixed for O365
+                        excel_formula = col.get("manual_formula") or col.get("formula_template")
+                        if excel_formula:
+                            excel_formula = excel_formula.replace("{i}", str(i+1))
+                            excel_formula = excel_formula.replace(",", separator).replace(";", separator).replace("'", '"')
+                            if separator == ",":
+                                if "LET(" in excel_formula:
+                                    excel_formula = excel_formula.replace("LET(", "_xlfn.LET(")
+                                if "SEQUENCE(" in excel_formula:
+                                    excel_formula = excel_formula.replace("SEQUENCE(", "_xlfn.SEQUENCE(")
                     except Exception as e:
                         import traceback
                         print(f"DEBUG: Eval failed for expression: {eval_expr}")
@@ -311,9 +322,17 @@ def generate_vlookup_workbooks(files_data: Dict[str, List[List[Any]]], prompt: s
                         qty += 1
                         safety += 1
                     val = qty
-                    # Debug Tolerance
+                    
+                    # Ensure excel_formula is assigned and fixed for O365
+                    excel_formula = col.get("manual_formula") or col.get("formula_template")
+                    if excel_formula:
+                        excel_formula = excel_formula.replace("{i}", str(i+1))
+                        excel_formula = excel_formula.replace(",", separator).replace(";", separator).replace("'", '"')
+                        if separator == ",":
+                            excel_formula = excel_formula.replace("LET(", "_xlfn.LET(").replace("SEQUENCE(", "_xlfn.SEQUENCE(")
+                    
                     if i <= 10:
-                        print(f"DEBUG Row {i}: ESS={ess_val}, Tolerance={tolerance}, Target_V={target_v}, Qty={val}")
+                        print(f"DEBUG Row {i}: ESS={ess_val}, Tolerance={tolerance}, Target_V={target_v}, Qty={val}, Formula={excel_formula}")
                 elif ctype in ["acrd_replacement_sum", "acrd_replacement_list"]:
                     s_key_idx = col.get("search_key_col_idx", 0)
                     pn_val = str(s_row[s_key_idx]).strip().upper() if s_key_idx < len(s_row) else ""
@@ -342,24 +361,6 @@ def generate_vlookup_workbooks(files_data: Dict[str, List[List[Any]]], prompt: s
                     except: pass
                 p_row.append(CellData(value=display_val))
                 
-                # Use the excel_formula calculated in the ctype blocks above
-                if (ctype == "expression" or ctype == "poisson_spare") and not excel_formula:
-                    excel_formula = col.get("manual_formula") or col.get("formula_template")
-                    if excel_formula:
-                        # Replace {i} with current row number (e.g. L{i} -> L2)
-                        excel_formula = excel_formula.replace("{i}", str(i+1))
-                        excel_formula = excel_formula.replace(",", separator).replace(";", separator)
-                        for char in re.findall(r'\{([A-Z])\}', excel_formula):
-                            excel_formula = excel_formula.replace(f'{{{char}}}', f"{char}{i+1}")
-                        excel_formula = excel_formula.replace(",", separator).replace(";", separator).replace("'", '"')
-                        
-                        # Fix for O365 Dynamic Arrays (Mode 2)
-                        if separator == ",":
-                            if "LET(" in excel_formula:
-                                excel_formula = excel_formula.replace("LET(", "_xlfn.LET(")
-                            if "SEQUENCE(" in excel_formula:
-                                excel_formula = excel_formula.replace("SEQUENCE(", "_xlfn.SEQUENCE(")
-
                 e_row.append(CellData(value=val, formula=excel_formula))
                 if i == 1 and excel_formula:
                     print(f"DEBUG SAMPLE FORMULA (Col {col.get('header')}): {excel_formula}")
