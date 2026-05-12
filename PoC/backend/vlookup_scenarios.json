@@ -1,0 +1,568 @@
+{
+  "scenarios": {
+    "Provisioning": {
+      "description": "Comprehensive Aerospace Initial Provisioning Copilot Analysis",
+      "source_file": "partNumbers",
+      "key_col": "PN",
+      "target_columns": [
+        {
+          "header": "PNR",
+          "type": "source",
+          "column": "PN",
+          "agent": "Data Mapping Agent",
+          "tool": "Context_Reader",
+          "phase": "Planning"
+        },
+        {
+          "header": "Annual FH",
+          "type": "source",
+          "column": "Annual FH",
+          "agent": "Data Mapping Agent",
+          "tool": "Context_Reader",
+          "phase": "Planning"
+        },
+        {
+          "header": "SPC",
+          "type": "vlookup",
+          "lookup_file": "partCapability",
+          "lookup_key_col_idx": 1,
+          "target_col_idx": 5,
+          "step_label": "Lookup SPC",
+          "agent": "Data Mapping Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Planning"
+        },
+        {
+          "header": "ESS",
+          "type": "vlookup",
+          "lookup_file": "partCapability",
+          "lookup_key_col_idx": 1,
+          "target_col_idx": 6,
+          "step_label": "Lookup ESS",
+          "agent": "Data Mapping Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Planning"
+        },
+        {
+          "header": "QPA",
+          "type": "vlookup",
+          "lookup_file": "partCapability",
+          "lookup_key_col_idx": 1,
+          "target_col_idx": 8,
+          "step_label": "Lookup QPA",
+          "agent": "Data Mapping Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Planning"
+        },
+        {
+          "header": "MTBUR for IP",
+          "type": "vlookup",
+          "lookup_file": "partCapability",
+          "lookup_key_col_idx": 1,
+          "target_col_idx": 7,
+          "step_label": "Lookup MTBUR for IP",
+          "agent": "Data Mapping Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Planning"
+        },
+        {
+          "header": "RRI",
+          "type": "source",
+          "column": "RRI",
+          "agent": "Data Mapping Agent",
+          "tool": "Context_Reader",
+          "phase": "Planning"
+        },
+        {
+          "header": "Buy Price (USD)",
+          "type": "source",
+          "column": "Buy Price (USD)",
+          "agent": "Data Mapping Agent",
+          "tool": "Context_Reader",
+          "phase": "Planning"
+        },
+        {
+          "header": "Aircraft Count",
+          "type": "source",
+          "column": "Aircraft Count",
+          "agent": "Data Mapping Agent",
+          "tool": "Context_Reader",
+          "phase": "Planning"
+        },
+        {
+          "header": "TAT",
+          "type": "vlookup",
+          "lookup_file": "partCapability",
+          "lookup_key_col_idx": 1,
+          "target_col_idx": 17,
+          "formula_suffix": "+11+7",
+          "step_label": "Calculate TAT",
+          "agent": "TAT Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "Annual Demand - Dann",
+          "type": "expression",
+          "formula_template": "{B}*{E}*{I}/({F}*POWER(10,{G}))",
+          "step_label": "Calculate Annual Demand",
+          "agent": "Demand Calculation Agent",
+          "tool": "Arithmetic_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "Expected Demand during Re-supply Time",
+          "type": "expression",
+          "formula_template": "ROUND({K}*{J}/365, 2)",
+          "step_label": "Calculate Expected Demand",
+          "agent": "Demand Calculation Agent",
+          "tool": "Arithmetic_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "Protection Level (P.L)",
+          "type": "vlookup",
+          "lookup_file": "parameters",
+          "search_key_col_idx": 3,
+          "manual_range": {
+            "start_row": 9,
+            "end_row": 11,
+            "key_col_idx": 1,
+            "val_col_idx": 2
+          },
+          "step_label": "Lookup Protection Level",
+          "agent": "Policy Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "MAD",
+          "type": "vlookup",
+          "lookup_file": "parameters",
+          "search_key_col_idx": 3,
+          "manual_range": {
+            "start_row": 9,
+            "end_row": 11,
+            "key_col_idx": 1,
+            "val_col_idx": 3
+          },
+          "step_label": "Lookup MAD",
+          "agent": "Policy Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "Does part qualify as spare?",
+          "type": "expression",
+          "formula_template": "IF({L}>{N}, \"Yes\", \"No\")",
+          "step_label": "Calculate Spare Qualification",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "Qty",
+          "type": "poisson_spare",
+          "lookup_file": "parameters",
+          "manual_range": {
+            "start_row": 5,
+            "end_row": 7,
+            "key_col_idx": 1,
+            "val_col_idx": 2
+          },
+          "lambda_col": "L",
+          "target_col": "N",
+          "search_key_col": "D",
+          "manual_formula": "LET(lambda;L{i};target;M{i}-VLOOKUP(D{i};Parameters!$F$1:$G$4;2;FALSE);n;SEQUENCE(100;1;0;1);INDEX(n;MATCH(TRUE;ROUND(POISSON(n;lambda;TRUE);2)>=target;0)))",
+          "step_label": "Calculate Recommended Qty",
+          "agent": "Poisson Provisioning Agent",
+          "tool": "Poisson_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "Actual P.L.",
+          "type": "expression",
+          "formula_template": "POISSON({P}, {L}, TRUE)",
+          "step_label": "Calculate Actual P.L.",
+          "agent": "Validation Agent",
+          "tool": "Poisson_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "Deviation",
+          "type": "expression",
+          "formula_template": "ROUND({M}-{Q}, 2)",
+          "step_label": "Calculate Deviation",
+          "agent": "Validation Agent",
+          "tool": "Arithmetic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "Calculation Status",
+          "type": "expression",
+          "formula_template": "IF({R}>VLOOKUP({D}, Parameters!$F$1:$G$4, 2, FALSE), \"Re-Calculate\", \"OK\")",
+          "step_label": "Final Status Check",
+          "agent": "Validation Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS1 Arising TRT",
+          "type": "expression",
+          "formula_template": "IF({D}=1, {L}, \" \")",
+          "step_label": "Calculate ESS1 Arising TRT",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS2 Arising TRT",
+          "type": "expression",
+          "formula_template": "IF({D}=2, {L}, \" \")",
+          "step_label": "Calculate ESS2 Arising TRT",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS3 Arising TRT",
+          "type": "expression",
+          "formula_template": "IF({D}=3, {L}, \" \")",
+          "step_label": "Calculate ESS3 Arising TRT",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS1 Actual TRT Demand",
+          "type": "expression",
+          "formula_template": "IF({D}=1, {L}*{Q}, \" \")",
+          "step_label": "Calculate ESS1 Actual TRT Demand",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS2 Actual TRT Demand",
+          "type": "expression",
+          "formula_template": "IF({D}=2, {L}*{Q}, \" \")",
+          "step_label": "Calculate ESS2 Actual TRT Demand",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS3 Actual TRT Demand",
+          "type": "expression",
+          "formula_template": "IF({D}=3, {L}*{Q}, \" \")",
+          "step_label": "Calculate ESS3 Actual TRT Demand",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS1 Arising Years",
+          "type": "expression",
+          "formula_template": "IF({D}=1, {K}, \" \")",
+          "step_label": "Calculate ESS1 Arising Year",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS2 Arising Years",
+          "type": "expression",
+          "formula_template": "IF({D}=2, {K}, \" \")",
+          "step_label": "Calculate ESS2 Arising Year",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS3 Arising Years",
+          "type": "expression",
+          "formula_template": "IF({D}=3, {K}, \" \")",
+          "step_label": "Calculate ESS3 Arising Year",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS1 Actual annual Demand",
+          "type": "expression",
+          "formula_template": "IF({D}=1, {K}*{Q}, \" \")",
+          "step_label": "Calculate ESS1 Actual Annual Demand",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS2 Actual annual Demand",
+          "type": "expression",
+          "formula_template": "IF({D}=2, {K}*{Q}, \" \")",
+          "step_label": "Calculate ESS2 Actual Annual Demand",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "ESS3 Actual annual Demand",
+          "type": "expression",
+          "formula_template": "IF({D}=3, {K}*{Q}, \" \")",
+          "step_label": "Calculate ESS3 Actual Annual Demand",
+          "agent": "Policy Agent",
+          "tool": "Logic_Engine",
+          "phase": "Validation"
+        }
+      ]
+    },
+    "ACRD-based Recommendation": {
+      "description": "In-house Pool Optimization & ACRD-based Recommendation",
+      "source_file": "partNumbers",
+      "key_col": "PN",
+      "target_columns": [
+        {
+          "header": "PN",
+          "type": "source",
+          "column": "PN",
+          "agent": "Data Mapping Agent",
+          "tool": "Context_Reader",
+          "phase": "Planning"
+        },
+        {
+          "header": "FAM Class",
+          "type": "vlookup",
+          "lookup_file": "partNumbers",
+          "lookup_key_col_idx": 0,
+          "target_col_idx": 5,
+          "fallback_value": "N/A",
+          "step_label": "Lookup FAM Class",
+          "agent": "Data Mapping Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Planning"
+        },
+        {
+          "header": "Avail Pool Qty by FA PN",
+          "type": "vlookup",
+          "lookup_file": "inhousePoolInfo",
+          "lookup_key_col_idx": 0,
+          "target_col_idx": 3,
+          "fallback_value": 0,
+          "manual_range": {
+            "start_row": 4,
+            "end_row": 3204,
+            "key_col_idx": 0,
+            "val_col_idx": 3
+          },
+          "step_label": "Lookup Avail Pool Qty",
+          "agent": "Data Mapping Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "Avail Pool Qty by FamClass Adj",
+          "type": "vlookup",
+          "lookup_file": "inhousePoolInfo",
+          "lookup_key_col_idx": 8,
+          "target_col_idx": 9,
+          "fallback_value": 0,
+          "manual_range": {
+            "start_row": 4,
+            "end_row": 2050,
+            "key_col_idx": 8,
+            "val_col_idx": 9
+          },
+          "search_key_col_idx": 1,
+          "step_label": "Lookup FamClass Adj Qty",
+          "agent": "Policy Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "Adjusted Total Avail Pool based on Pool Std",
+          "type": "acrd_replacement_sum",
+          "search_key_col_idx": 0,
+          "step_label": "Calculate based on ACRD",
+          "agent": "Analytics Agent",
+          "tool": "ACRD_Calculator",
+          "phase": "Modeling"
+        },
+        {
+          "header": "Pool Std",
+          "type": "acrd_replacement_list",
+          "search_key_col_idx": 0,
+          "step_label": "Identify Replacement Standards",
+          "agent": "Mapping Agent",
+          "tool": "ACRD_Scanner",
+          "phase": "Modeling"
+        }
+      ]
+    },
+    "Pool Buy Scenarios": {
+      "description": "Strategic Pool Purchase Analysis & Scenario Planning",
+      "source_file": "partNumbers",
+      "key_col": "PN",
+      "target_columns": [
+        {
+          "header": "PN",
+          "type": "source",
+          "column": "PN",
+          "agent": "Data Mapping Agent",
+          "tool": "Context_Reader",
+          "phase": "Planning"
+        },
+        {
+          "header": "Group:\nA- Inhouse Cap\nB- OEMs\nC- Others",
+          "type": "vlookup",
+          "lookup_file": "partCapability",
+          "lookup_key_col_idx": 1,
+          "target_col_idx": 16,
+          "manual_range": {
+            "key_col_idx": 1,
+            "val_col_idx": 16
+          },
+          "fallback_value": "N/A",
+          "step_label": "Lookup Group A,B,C from Part Capability",
+          "agent": "Data Mapping Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Planning"
+        },
+        {
+          "header": "IP1- Standalone",
+          "type": "vlookup",
+          "lookup_file": "partNumbers",
+          "lookup_key_col_idx": 0,
+          "target_col_idx": 4,
+          "manual_range": {
+            "key_col_idx": 0,
+            "val_col_idx": 4
+          },
+          "fallback_value": 0,
+          "step_label": "Lookup Standalone IP1"
+        },
+        {
+          "header": "Standalone IP1 Qty",
+          "type": "mock_file_list",
+          "file_path": "mock/ip1.txt",
+          "step_label": "Provisioning IP1",
+          "agent": "Poisson Provisioning Agent",
+          "tool": "Poisson_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "IP3- Adj Current Fleet only",
+          "type": "vlookup",
+          "lookup_file": "currentMbhFleet",
+          "search_key_col_idx": 0,
+          "manual_range": {
+            "start_row": 1,
+            "end_row": 8000,
+            "key_col_idx": 18,
+            "val_col_idx": 34,
+            "end_col_idx": 40
+          },
+          "fallback_value": 0,
+          "step_label": "Lookup IP3 Adj Current Fleet",
+          "agent": "Data Mapping Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "IP3 Qty",
+          "type": "mock_file_list",
+          "file_path": "mock/ip3.txt",
+          "step_label": "Provisioning IP3",
+          "agent": "Poisson Provisioning Agent",
+          "tool": "Poisson_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "IP2 - Current Fleet+ Skymark",
+          "type": "expression",
+          "formula_template": "{C}+{E}",
+          "step_label": "Calculate IP2 A/C",
+          "agent": "Data Mapping Agent",
+          "tool": "Arithmetic_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "IP2 Qty",
+          "type": "mock_file_list",
+          "file_path": "mock/ip2.txt",
+          "step_label": "Provisioning IP2",
+          "agent": "Poisson Provisioning Agent",
+          "tool": "Poisson_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "Adjusted Total Avail Pool based on Pool Std",
+          "type": "mock_file_list",
+          "file_path": "mock/avail_pool.txt",
+          "step_label": "In-house Pool Recommendantion",
+          "agent": "Analytics Agent",
+          "tool": "ACRD_Calculator",
+          "phase": "Modeling"
+        },
+        {
+          "header": "IP2 less Inhouse Pool",
+          "type": "expression",
+          "formula_template": "{H}-{I}",
+          "step_label": "Calculate IP2 Net Qty",
+          "agent": "Data Mapping Agent",
+          "tool": "Arithmetic_Engine",
+          "phase": "Modeling"
+        },
+        {
+          "header": "IP Qty (Difference Model), considering inhouse pool",
+          "type": "expression",
+          "formula_template": "IF({J}<0, 0, IF({E}>0, {H}-{F}, MAX(0, {D}-{I})))",
+          "step_label": "Final Recommendation",
+          "agent": "Planner Agent",
+          "tool": "Decision_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "2026 MLP w Tariff (USD)",
+          "type": "vlookup",
+          "lookup_file": "partNumbers",
+          "lookup_key_col_idx": 0,
+          "target_col_idx": 6,
+          "fallback_value": 0,
+          "format": "currency",
+          "step_label": "Lookup MLP Price",
+          "agent": "Data Mapping Agent",
+          "tool": "CrossRef_Engine",
+          "phase": "Planning"
+        },
+        {
+          "header": "Manual Top-up for zero stock items",
+          "type": "mock_file_list",
+          "file_path": "mock/topup.txt",
+          "step_label": "Apply Manual Top-ups",
+          "agent": "Planner Agent",
+          "tool": "Context_Reader",
+          "phase": "Validation"
+        },
+        {
+          "header": "Pool Buy Qty",
+          "type": "expression",
+          "formula_template": "{K}+{M}",
+          "step_label": "Calculate Pool Buy Qty",
+          "agent": "Planner Agent",
+          "tool": "Decision_Engine",
+          "phase": "Validation"
+        },
+        {
+          "header": "Pool Buy (USD)",
+          "type": "expression",
+          "formula_template": "{N}*{L}",
+          "format": "currency",
+          "step_label": "Calculate Buy Value",
+          "agent": "Planner Agent",
+          "tool": "Arithmetic_Engine",
+          "phase": "Validation"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,50 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+.ai-edit-preview-range {
+  position: absolute;
+  pointer-events: none;
+  border: 1px solid rgba(79, 114, 255, 0.35);
+  background: linear-gradient(
+    90deg,
+    rgba(79, 114, 255, 0.12) 0%,
+    rgba(139, 92, 246, 0.08) 55%,
+    rgba(255, 120, 120, 0.08) 100%
+  );
+  box-shadow: 0 0 0 1px rgba(79, 114, 255, 0.08),
+              0 8px 24px rgba(79, 114, 255, 0.08);
+  border-radius: 4px;
+  transition: opacity 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  z-index: 5;
+}
+
+.ai-edit-preview-range.running {
+  animation: aiRangePulse 1.8s ease-in-out infinite;
+}
+
+.ai-edit-preview-range.failed {
+  border-color: rgba(255, 80, 80, 0.45);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 80, 80, 0.12) 0%,
+    rgba(255, 80, 80, 0.05) 100%
+  );
+}
+
+.ai-edit-preview-range.completed {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+@keyframes aiRangePulse {
+  0% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0.55;
+  }
+}

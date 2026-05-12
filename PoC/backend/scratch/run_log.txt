@@ -1,0 +1,10 @@
+Row 1: lambda=0.26, base=0.93, key=2, tol=0.0, target=0.93, qty=1
+  preview_row indices: L(11)=0.26, M(12)=0.93
+Row 2: lambda=0.26, base=0.93, key=2, tol=0.0, target=0.93, qty=1
+  preview_row indices: L(11)=0.26, M(12)=0.93
+Row 3: lambda=0.43, base=0.93, key=2, tol=0.0, target=0.93, qty=1
+  preview_row indices: L(11)=0.43, M(12)=0.93
+Row 4: lambda=1.67, base=0.9, key=3, tol=0.0, target=0.9, qty=3
+  preview_row indices: L(11)=1.67, M(12)=0.9
+Row 5: lambda=8.42, base=0.93, key=2, tol=0.0, target=0.93, qty=13
+  preview_row indices: L(11)=8.42, M(12)=0.93

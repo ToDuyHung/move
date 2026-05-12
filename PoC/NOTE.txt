@@ -1,0 +1,27 @@
+Good. tiếp theo là step 
+- lookup MAD từ Parameter, tên cột "MAD", công thức: =VLOOKUP(D2;Parameters!$B$9:$D$11;3;FALSE) index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Check Does part qualify as spare, tên cột "Does part qualify as spare?", công thức: =IF(K2>N2;"Yes";"No") index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+
+
+Good. tiếp theo ở PROVISIONING là các step:
+- Cột Q: calculate Actual Protection Level, tên cột "Actual P.L.", công thức:  =POISSON(P2;L2;TRUE) index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Cột R: calculate Deviation, tên cột "Deviation", công thức:  =ROUND(M2-Q2; 2) index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Cột S: check Calculation Status, tên cột "Calculation Status", công thức:  =IF(R2>VLOOKUP(D2;Parameters!$F$1:$G$4;2;FALSE);"Re-Calculate";"OK") (này tương tự với công thức lookup Tolerance Level từng làm trước đó, xem cách làm và làm lại y chang để tránh lỗi format thì tải file về mở trên Google Sheet nhé)
+
+- Cột T: calculate ESS1 Arising TRT, tên cột "ESS1 Arising TRT", công thức: =IF(D2=1;L2;" "). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Cột U: calculate ESS2 Arising TRT, tên cột "ESS2 Arising TRT", công thức: =IF(D2=2;L2;" "). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Cột V: calculate ESS3 Arising TRT, tên cột "ESS3 Arising TRT", công thức: =IF(D2=3;L2;" "). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+
+- Cột W: calculate ESS1 Actual TRT Demand, tên cột "ESS1 Actual TRT Demand", công thức: =IF(D2=1;L2*Q2;0). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Cột X: calculate ESS2 Actual TRT Demand, tên cột "ESS2 Actual TRT Demand", công thức: =IF(D2=2;L2*Q2;0). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Cột Y: calculate ESS3 Actual TRT Demand, tên cột "ESS3 Actual TRT Demand", công thức: =IF(D2=3;L2*Q2;0). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+
+- Cột Z: calculate ESS1 Arising Years, tên cột "ESS1 Arising Years", công thức: =IF(D2=1;K2;" "). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Cột AA: calculate ESS2 Arising Years, tên cột "ESS2 Arising Years", công thức: =IF(D2=2;K2;" "). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Cột AB: calculate ESS3 Arising Years, tên cột "ESS3 Arising Years", công thức: =IF(D2=3;K2;" "). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé 
+
+- Cột AC: calculate ESS1 Actual annual Demand, tên cột "ESS1 Actual annual Demand", công thức: =IF(D2=1;K2*Q2;" "). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Cột AD: calculate ESS2 Actual annual Demand, tên cột "ESS2 Actual annual Demand", công thức: =IF(D2=2;K2*Q2;" "). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+- Cột AE: calculate ESS3 Actual annual Demand, tên cột "ESS3 Actual annual Demand", công thức: =IF(D2=3;K2*Q2;" "). index 2 chỉ là ví dụ. bạn tự map ra công thức tổng quát và viết lại tên step ngắn gọn giúp tôi nhé
+
+Với các công thức từ cột T đến cột AE, khi tính Sum in ra ở Backend, những giá trị nào là " " thì xem như bằng 0 để tính nhé
