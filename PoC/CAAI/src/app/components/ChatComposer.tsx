@@ -1,5 +1,5 @@
 import { Send } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CommandDropdown from './CommandDropdown';
 import { Command } from '../types';
 
@@ -9,6 +9,7 @@ interface ChatComposerProps {
   onCommandChange: (command: Command) => void;
   onSubmit: (prompt: string) => void;
   disabled?: boolean;
+  lastPrompt?: string;
 }
 
 const tabCommandConfig: Record<string, Command[]> = {
@@ -22,7 +23,8 @@ export default function ChatComposer({
   activeTab,
   onCommandChange,
   onSubmit,
-  disabled = false
+  disabled = false,
+  lastPrompt = ''
 }: ChatComposerProps) {
   const [prompt, setPrompt] = useState('');
   const isProvisioning = selectedCommand === 'Provisioning';
@@ -32,6 +34,9 @@ export default function ChatComposer({
   // Only lock prompt for Provisioning and ACRD. Pool Buy needs custom input.
   const isFixedPrompt = (isProvisioning || isACRD) && !isPoolBuy;
   const availableCommands = tabCommandConfig[activeTab] || [];
+
+  // When disabled starts, we might want to keep the current prompt visible
+  // But usually, App passes currentTask.prompt which becomes lastPrompt.
 
   const handleSubmit = () => {
     if ((isFixedPrompt || prompt.trim() || isPoolBuy) && !disabled) {
@@ -57,18 +62,19 @@ export default function ChatComposer({
 
       <div className="mt-3 relative">
         <textarea
-          value={isFixedPrompt ? "" : prompt}
+          value={isFixedPrompt ? "" : (disabled ? (lastPrompt || prompt) : prompt)}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={
             isFixedPrompt ? "" : 
             isPoolBuy 
-              ? "IP1: 98,93,90\nIP2: 98,94,90\nIP3: 98,94,90" 
+              ? "Set ESS1/ESS2/ESS3 protection levels:\n- IP1: 98/93/90%\n- IP2: 98/94/90%\n- IP3: 98/95/90%" 
               : "Type your instruction here..."
           }
           disabled={disabled || isFixedPrompt}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed text-sm text-gray-700 whitespace-pre"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed text-sm text-gray-700 whitespace-pre overflow-y-auto"
           rows={4}
+          style={{ maxHeight: '150px' }}
         />
 
         <button

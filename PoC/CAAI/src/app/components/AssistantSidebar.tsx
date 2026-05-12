@@ -230,7 +230,7 @@ export default function AssistantSidebar({
           </div>
         )}
 
-        {/* Technical Activity Log */}
+        {/* Processing Details */}
         {(isProcessing || currentTask) && (
           <div className="space-y-3">
             <button 
@@ -238,7 +238,7 @@ export default function AssistantSidebar({
               className="w-full flex items-center justify-between py-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest hover:text-gray-600 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <Terminal className="w-3 h-3" /> Technical Activity Log
+                <Terminal className="w-3 h-3" /> Processing Details
               </div>
               {showTechnicalLog ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
@@ -281,6 +281,7 @@ export default function AssistantSidebar({
           onCommandChange={onCommandChange}
           onSubmit={onSubmitPrompt}
           disabled={isProcessing}
+          lastPrompt={currentTask?.prompt}
         />
       </div>
     </div>
