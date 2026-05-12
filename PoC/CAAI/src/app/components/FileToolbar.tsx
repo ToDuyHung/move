@@ -12,20 +12,20 @@ interface FileToolbarProps {
 const tabFileConfig: Record<string, { category: FileCategory; label: string }[]> = {
   provisioning: [
     { category: 'partNumbers', label: 'Part Numbers' },
-    { category: 'partCapability', label: 'Part Capability' },
+    { category: 'partCapability', label: 'Capability' },
     { category: 'parameters', label: 'Parameters' },
   ],
   inHousePool: [
     { category: 'partNumbers', label: 'Part Numbers' },
-    { category: 'inhousePoolInfo', label: 'Inhouse Pool Info' },
-    { category: 'acrdData', label: 'Aircraft Component Replacement Data' },
+    { category: 'inhousePoolInfo', label: 'Pool Info' },
+    { category: 'acrdData', label: 'ACRD Data' },
   ],
   poolBuyScenarios: [
     { category: 'partNumbers', label: 'Part Numbers' },
-    { category: 'partCapability', label: 'Part Capability' },
+    { category: 'partCapability', label: 'Capability' },
     { category: 'parameters', label: 'Parameters' },
-    { category: 'inhousePoolInfo', label: 'Inhouse Pool Info' },
-    { category: 'currentMbhFleet', label: 'Current MBH Fleet' },
+    { category: 'inhousePoolInfo', label: 'Pool Info' },
+    { category: 'currentMbhFleet', label: 'MBH Fleet' },
   ]
 };
 
@@ -34,7 +34,7 @@ export default function FileToolbar({ uploadedFiles, activeTab, onFileSelect, on
 
   return (
     <div className="flex items-center justify-between p-4 bg-gray-50 border-b gap-4">
-      <div className="flex items-center gap-2 flex-1 flex-nowrap">
+      <div className="flex items-center gap-2 flex-nowrap">
         <span className="font-semibold text-gray-700 whitespace-nowrap mr-2">Files:</span>
         {fileSlots.map((slot) => (
           <FileUploadChip

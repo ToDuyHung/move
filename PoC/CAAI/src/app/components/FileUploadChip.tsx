@@ -24,7 +24,7 @@ export default function FileUploadChip({
   };
 
   return (
-    <label className="cursor-pointer">
+    <label className="cursor-pointer w-[140px] shrink-0">
       <input
         type="file"
         accept=".xlsx,.xls"
@@ -32,14 +32,14 @@ export default function FileUploadChip({
         className="hidden"
       />
       <div className={`
-        flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all flex-1 justify-center
+        flex items-center gap-1.5 px-1.5 h-[44px] rounded-lg border-2 transition-all justify-center text-center
         ${uploaded
           ? 'border-green-500 bg-green-50 text-green-900'
           : 'border-gray-300 bg-white text-gray-500 hover:border-blue-400'
         }
       `}>
-        <Upload size={16} />
-        <span className={uploaded ? 'font-semibold' : 'font-normal'}>
+        <Upload size={14} className="shrink-0" />
+        <span className={`text-sm leading-tight ${uploaded ? 'font-semibold' : 'font-normal'}`}>
           {label}
         </span>
         {uploaded && <Check size={16} className="text-green-600" />}

@@ -352,6 +352,13 @@ def generate_vlookup_workbooks(files_data: Dict[str, List[List[Any]]], prompt: s
                         for char in re.findall(r'\{([A-Z])\}', excel_formula):
                             excel_formula = excel_formula.replace(f'{{{char}}}', f"{char}{i+1}")
                         excel_formula = excel_formula.replace(",", separator).replace(";", separator).replace("'", '"')
+                        
+                        # Fix for O365 Dynamic Arrays (Mode 2)
+                        if separator == ",":
+                            if "LET(" in excel_formula:
+                                excel_formula = excel_formula.replace("LET(", "_xlfn.LET(")
+                            if "SEQUENCE(" in excel_formula:
+                                excel_formula = excel_formula.replace("SEQUENCE(", "_xlfn.SEQUENCE(")
 
                 e_row.append(CellData(value=val, formula=excel_formula))
                 if i == 1 and excel_formula:
